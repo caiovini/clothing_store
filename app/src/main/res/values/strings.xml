@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">ClothingStore</string>
+    <string name="new_zealand_dollar"><b>NZD: </b></string>
+    <string name="clothing_photo">clothing_photo</string>
+    <string name="button_share">SHARE ON SOCIAL MEDIA</string>
+    <string name="button_add">ADD TO BAG</string>
+    <string name="button_buy">BUY</string>
+    <string name="button_log_out">LOG OUT</string>
+    <string name="go_back_button">Go back</string>
+
+
+    <string name="clothes_show_buy">clothes_show_buy</string>
+    <string name="user_name">User name</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="facebook_login">Facebook login</string>
+    <string name="app_login"><b>You have to login in order to proceed</b></string>
+    <string name="sample_text">Sample text</string>
+    <string name="keep_me_logged_text">Keep me logged</string>
+    <string name="Not_keep_me_logged_text">Do not keep me logged</string>
+    <string name="settings">Settings</string>
+    <string name="login_admin">Login admin</string>
+    <string name="edit_products_admin">Edit product</string>
+
+
+    <string name="product_name_hint">Product name</string>
+    <string name="product_price_hint">Product price</string>
+    <string name="product_id_hint">Product id</string>
+    <string name="voucher_hint">Voucher number</string>
+    <string name="in_stock">In stock</string>
+
+
+    <string name="button_submit">Submit</string>
+    <string name="product_button_delete">Delete</string>
+    <string name="add_new_photo">Add new photo</string>
+
+
+    <string name="share">Share</string>
+    <string name="search">Search</string>
+    <string name="add_button_image">add_button_image</string>
+    <string name="buy_button_image">buy_button_image</string>
+
+    <string name="hint_address_text">Address</string>
+    <string name="hint_postal_code_text">Postal code</string>
+    <string name="hint_card_number_text">Credit card number</string>
+    <string name="hint_security_card_number_text">Security number</string>
+
+    <string name="button_deliver_home_text">Deliver at my adress</string>
+    <string name="button_pick_up_at_store_text">Pick it up at store</string>
+
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="round_check_buy">round_check_buy</string>
+    <string name="add_photo_new_product">add_photo_new_product</string>
+    <string name="product_not_in_stock">product_not_in_stock</string>
+    <string name="text_register">Register new user</string>
+    <string name="first_name_hint">First name</string>
+    <string name="second_name_hint">Second name</string>
+
+
+</resources>

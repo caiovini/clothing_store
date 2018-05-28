@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="location_array">
+        <item>Select a location to be delivered or pick up</item>
+        <item>My address</item>
+        <item>CBD Auckland</item>
+        <item>Avondale</item>
+        <item>Birkenhead</item>
+        <item>Mission bay</item>
+    </string-array>
+
+</resources>
