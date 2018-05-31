@@ -28,24 +28,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editTextPostalCode"
-        android:layout_width="match_parent"
-        android:layout_height="39dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:ems="10"
-        android:hint="@string/hint_postal_code_text"
-        android:inputType="number"
-        android:maxLength="5"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextAdress" />
-
-    <EditText
         android:id="@+id/editTextCardNumber"
         android:layout_width="match_parent"
         android:layout_height="39dp"
@@ -60,7 +42,7 @@
         android:maxLength="16"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextPostalCode" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextAdress" />
 
     <EditText
         android:id="@+id/editTextSecurityNumber"
@@ -104,7 +86,6 @@
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="20dp"
-        android:entries="@array/location_array"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"

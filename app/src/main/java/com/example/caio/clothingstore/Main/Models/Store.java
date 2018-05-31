@@ -15,6 +15,14 @@ public class Store {
         this.isMainBranch = isMainBranch;
     }
 
+    public Store(int storeId , String branchAddress, String telephoneNumber, char isMainBranch) {
+
+        this.storeId = storeId;
+        this.branchAddress = branchAddress;
+        this.telephoneNumber = telephoneNumber;
+        this.isMainBranch = isMainBranch;
+    }
+
 
     public int getStoreId() {
         return storeId;

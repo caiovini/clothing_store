@@ -2,6 +2,7 @@ package com.example.caio.clothingstore.Main.Fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -13,13 +14,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.caio.clothingstore.Main.Activities.RegisterActivity;
+import com.example.caio.clothingstore.Main.Database.Database;
+import com.example.caio.clothingstore.Main.Helper.Base64Custom;
 import com.example.caio.clothingstore.Main.Helper.Preferences;
+import com.example.caio.clothingstore.Main.Models.CreditCard;
+import com.example.caio.clothingstore.Main.Models.Customer;
 import com.example.caio.clothingstore.R;
 
 
 public class LoginApp extends Fragment {
 
     private final String IS_LOGGED = "IS_LOGGED";
+    private final String USER_NAME = "USER_NAME";
     private final String KEEP_USER_LOGGED = "LOGGED";
 
     private Button buttonLogin;
@@ -28,6 +34,7 @@ public class LoginApp extends Fragment {
     private TextView register;
     private onCommitTransaction mCallback;
     private Preferences preferences;
+    private Database database;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -46,14 +53,24 @@ public class LoginApp extends Fragment {
            if true call fragment details
         */
 
+        database = new Database(getContext());
+        database.getWritableDatabase();
 
         preferences = new Preferences(getContext());
         String isLogged =  preferences.getIdentifier(IS_LOGGED);
 
         if(isLogged.equals("YES")) {
 
-            mCallback.onTransaction();
-            buttonLogin.setVisibility(Button.INVISIBLE);
+            String userName =  preferences.getIdentifier(USER_NAME);
+
+            Customer customer = getCustomerInformation(userName , "" , true);
+
+
+            if(customer != null) {
+
+                mCallback.onTransaction(customer);
+                buttonLogin.setVisibility(Button.INVISIBLE);
+            }
         }
 
 
@@ -84,9 +101,15 @@ public class LoginApp extends Fragment {
 
                 }else{
 
-                    preferences.saveData(IS_LOGGED, "YES");
-                    mCallback.onTransaction();
-                    buttonLogin.setVisibility(Button.INVISIBLE);
+                    Customer customer = getCustomerInformation(userName.getText().toString() , password.getText().toString() , false);
+
+                    if (customer != null) {
+
+                        preferences.saveData(IS_LOGGED, "YES");
+                        preferences.saveData(USER_NAME, userName.getText().toString());
+                        mCallback.onTransaction(customer);
+                        buttonLogin.setVisibility(Button.INVISIBLE);
+                    }
 
                 }
             }
@@ -95,10 +118,43 @@ public class LoginApp extends Fragment {
         return view;
     }
 
+    private Customer getCustomerInformation(String userName , String password ,  boolean isLogged ){
+
+        Customer customer = null;
+
+        database.open();
+        Cursor cursor = database.getUserByUsername(userName);
+
+        if (cursor.getCount() > 0){
+
+            cursor.moveToFirst();
+            String decodePassword = Base64Custom.decodeBase64(cursor.getString(2));
+
+            if(!isLogged){
+
+                if(!password.equals(decodePassword)){
+
+                    Toast.makeText(getContext() , "Wrong password" , Toast.LENGTH_LONG).show();
+                    return null;
+                }
+            }
+
+
+            CreditCard creditCard = new CreditCard(cursor.getInt(4) , cursor.getInt(6) , cursor.getInt(7) , cursor.getString(5));
+            customer = new Customer(cursor.getInt(0) , cursor.getString(1) , decodePassword , cursor.getString(3) , false , creditCard);
+
+        }else{
+
+            Toast.makeText(getContext() , "User not found" , Toast.LENGTH_LONG).show();
+        }
+
+        database.close();
+        return customer;
+    }
 
 
     public interface onCommitTransaction {
-           void onTransaction();
+           void onTransaction(Customer customer);
     }
 
     @Override

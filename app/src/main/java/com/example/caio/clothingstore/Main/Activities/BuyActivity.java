@@ -23,7 +23,8 @@ import com.example.caio.clothingstore.Main.Fragments.DetailsFragment;
 import com.example.caio.clothingstore.Main.Fragments.LoginApp;
 import com.example.caio.clothingstore.Main.Helper.Preferences;
 import com.example.caio.clothingstore.Main.Models.Clothes;
-import com.example.caio.clothingstore.Main.Interfaces.Payment;
+import com.example.caio.clothingstore.Main.Interface.Payment;
+import com.example.caio.clothingstore.Main.Models.Customer;
 import com.example.caio.clothingstore.R;
 import java.io.File;
 
@@ -90,34 +91,34 @@ public class BuyActivity extends AppCompatActivity implements LoginApp.onCommitT
 
         if(clothes.getStorageAdress().isEmpty()) {
 
-            switch (clothes.getName()) {
+            switch (clothes.getClothIdNumber()) {
 
-                case "Trousers":
+                case 1:
 
                     productImage.setImageResource(R.drawable.trousers);
                     break;
 
-                case "Skirt":
+                case 2:
 
                     productImage.setImageResource(R.drawable.skirt);
                     break;
 
-                case "Jeans":
+                case 3:
 
                     productImage.setImageResource(R.drawable.jeans);
                     break;
 
-                case "T-Shirt":
+                case 4:
 
                     productImage.setImageResource(R.drawable.t_shirt);
                     break;
 
-                case "Jacket":
+                case 5:
 
                     productImage.setImageResource(R.drawable.jacket);
                     break;
 
-                case "Hat":
+                case 6:
 
                     productImage.setImageResource(R.drawable.hat);
                     break;
@@ -237,11 +238,11 @@ public class BuyActivity extends AppCompatActivity implements LoginApp.onCommitT
     }
 
     @Override
-    public void onTransaction() {
+    public void onTransaction(Customer customer) {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment, new DetailsFragment()).commit();
+        fragmentTransaction.replace(R.id.fragment,  new DetailsFragment()).commit();
     }
 
     @Override
@@ -259,7 +260,6 @@ public class BuyActivity extends AppCompatActivity implements LoginApp.onCommitT
 
                         Toast.makeText(this,"Your list is empty" , Toast.LENGTH_LONG).show();
                     }else {
-
 
                         validateCallBack.onValidate();
                     }
@@ -333,7 +333,7 @@ public class BuyActivity extends AppCompatActivity implements LoginApp.onCommitT
 
 
     @Override
-    public void onConfirmPayment(int voucher) {
+    public void onConfirmPayment(int voucher , final int userId) {
 
         String totalString = preferences.getIdentifier(ITEMS_TOTAL_SUM);
         String discountTotal = String.format("%.2f" , Double.parseDouble(totalString) * 0.9);
@@ -362,6 +362,7 @@ public class BuyActivity extends AppCompatActivity implements LoginApp.onCommitT
                     //Send back if user adds product to the list
                     intentResult.putExtra("result" , "PAYMENT_CONFIRMED");
                     intentResult.putExtra("value", clothes);
+                    intentResult.putExtra("userId", userId);
                     setResult(Activity.RESULT_OK , intentResult);
 
                     Toast.makeText(getApplicationContext() , "Payment approved" , Toast.LENGTH_LONG).show();

@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,11 +22,26 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.example.caio.clothingstore.Main.Database.Database;
+import com.example.caio.clothingstore.Main.Helper.AndroidLoginController;
+import com.example.caio.clothingstore.Main.Helper.Configure;
 import com.example.caio.clothingstore.Main.Models.Clothes;
 import com.example.caio.clothingstore.R;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AdminActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -45,6 +61,8 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
     private final int GALLERY_PICTURE = 1;
     private File file;
     private Clothes clotheEdit;
+    private Database database;
+    private String roleManager;
 
 
     @Override
@@ -53,6 +71,8 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_admin);
 
         Bundle extras = getIntent().getExtras();
+
+        roleManager = extras.getString("role_manager");
 
         if (extras != null) {
 
@@ -80,6 +100,10 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
         productIdEditText = (EditText) findViewById(R.id.editTextProductId);
         inStockEditText = (EditText) findViewById(R.id.editTextInStock);
 
+        productIdEditText.setEnabled(false);
+
+        database = new Database(this);
+
 
     }
 
@@ -99,7 +123,14 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
     public boolean onCreateOptionsMenu(Menu menu) {
 
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.menu_admin, menu);
+
+        if (roleManager.equals("General manager")){
+
+            menuInflater.inflate(R.menu.menu_general_manager , menu);
+        }else {
+
+            menuInflater.inflate(R.menu.menu_branch_manager, menu);
+        }
         return true;
     }
 
@@ -107,93 +138,163 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
     public boolean onOptionsItemSelected(MenuItem item) {
 
 
-        View view = getLayoutInflater().inflate(R.layout.dialog_edit_products, null);
+        switch (item.getItemId()) {
 
-        final Spinner spinnerIds = (Spinner) view.findViewById(R.id.spinnerIds);
+            case R.id.edit_products:
 
-        ArrayAdapter<String> adapter;
-        List<String> list = new ArrayList<>();
-        list.add("ID");
+                View viewEditProducts = getLayoutInflater().inflate(R.layout.dialog_edit_products, null);
 
-        for (Integer i : ids) {
+                final Spinner spinnerIds = (Spinner) viewEditProducts.findViewById(R.id.spinnerIds);
 
-            list.add(String.format("%04d", i));
-        }
+                ArrayAdapter<String> adapter;
+                List<String> list = new ArrayList<>();
+                list.add("ID");
 
-        adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item,
-                list);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerIds.setAdapter(adapter);
+                for (Integer i : ids) {
+
+                    list.add(String.format("%04d", i));
+                }
+
+                adapter = new ArrayAdapter<>(this,
+                        android.R.layout.simple_spinner_item,
+                        list);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerIds.setAdapter(adapter);
 
 
-        final AlertDialog alertDialog = new AlertDialog.Builder
-                (this, android.app.AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                .setView(view)
-                .setTitle("Choose item id")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                final AlertDialog alertDialogEditProduct = new AlertDialog.Builder
+                        (this, android.app.AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                        .setView(viewEditProducts)
+                        .setTitle("Choose item id")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        }).setNegativeButton("CANCEL", null).create();
+
+                alertDialogEditProduct.setOnShowListener(new DialogInterface.OnShowListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                    public void onShow(DialogInterface dialogInterface) {
 
-                    }
-                }).setNegativeButton("CANCEL", null).create();
+                        Button positive = alertDialogEditProduct.getButton(AlertDialog.BUTTON_POSITIVE);
+                        Button negative = alertDialogEditProduct.getButton(AlertDialog.BUTTON_NEGATIVE);
 
-        alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialogInterface) {
+                        positive.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
 
-                Button positive = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                Button negative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                                String userSelection = spinnerIds.getSelectedItem().toString();
 
-                positive.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
+                                if (userSelection.equals("ID")) {
 
-                        String userSelection = spinnerIds.getSelectedItem().toString();
+                                    Toast.makeText(getApplicationContext(), "You must select an ID", Toast.LENGTH_LONG).show();
 
-                        if (userSelection.equals("ID")) {
+                                } else {
 
-                            Toast.makeText(getApplicationContext() , "You must select an ID" , Toast.LENGTH_LONG).show();
+                                    int selectedItem = Integer.parseInt(userSelection);
+                                    clotheEdit = null;
 
-                        } else {
+                                    for (Clothes c : listProducts) {
 
-                            int selectedItem = Integer.parseInt(userSelection);
-                            clotheEdit = null;
+                                        if (c.getClothIdNumber() == selectedItem) {
 
-                            for (Clothes c : listProducts) {
+                                            clotheEdit = c;
+                                            break;
+                                        }
+                                    }
 
-                                if (c.getClothIdNumber() == selectedItem) {
+                                    if (clotheEdit != null) {
 
-                                    clotheEdit = c;
-                                    break;
+                                        completeFields(clotheEdit);
+                                        deleteButton.setVisibility(Button.VISIBLE);
+                                    }
+
+                                    alertDialogEditProduct.dismiss();
                                 }
                             }
+                        });
 
-                            if (clotheEdit != null) {
+                        negative.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
 
-                                completeFields(clotheEdit);
-                                deleteButton.setVisibility(Button.VISIBLE);
+                                alertDialogEditProduct.dismiss();
                             }
+                        });
 
-                            alertDialog.dismiss();
-                        }
+
                     }
                 });
 
-                negative.setOnClickListener(new View.OnClickListener() {
+                alertDialogEditProduct.show();
+                return true;
+
+            case R.id.add_voucher:
+
+                View viewAddVoucher = getLayoutInflater().inflate(R.layout.dialog_type_voucher, null);
+
+                final EditText voucherTyped = (EditText) viewAddVoucher.findViewById(R.id.typeVoucherId);
+
+
+                final AlertDialog alertDialogAddVoucher = new AlertDialog.Builder
+                        (this, android.app.AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                        .setView(viewAddVoucher)
+                        .setTitle("Type number of voucher")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        }).setNegativeButton("CANCEL", null).create();
+
+                alertDialogAddVoucher.setOnShowListener(new DialogInterface.OnShowListener() {
                     @Override
-                    public void onClick(View view) {
+                    public void onShow(DialogInterface dialogInterface) {
 
-                        alertDialog.dismiss();
+                        Button positive = alertDialogAddVoucher.getButton(AlertDialog.BUTTON_POSITIVE);
+                        Button negative = alertDialogAddVoucher.getButton(AlertDialog.BUTTON_NEGATIVE);
+
+                        positive.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+
+                                String voucher = voucherTyped.getText().toString();
+
+                                if (voucher.isEmpty()) {
+
+                                    Toast.makeText(getApplicationContext(), "Voucher is empty", Toast.LENGTH_LONG).show();
+
+                                } else {
+
+                                    //Call API
+                                    registerVoucher(voucher);
+
+
+                                    alertDialogAddVoucher.dismiss();
+                                }
+                            }
+                        });
+
+                        negative.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+
+                                alertDialogAddVoucher.dismiss();
+                            }
+                        });
+
+
                     }
                 });
 
+                alertDialogAddVoucher.show();
+                return true;
 
-            }
-        });
+            default:
 
-        alertDialog.show();
-        return true;
+                return true;
+        }
     }
 
     @Override
@@ -216,7 +317,7 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
                 deleteButton.setVisibility(Button.INVISIBLE);
                 productNameEditText.setText("");
                 productPriceEditText.setText("");
-                productIdEditText.setEnabled(true);
+                productIdEditText.setEnabled(false);
                 productIdEditText.setText("");
                 inStockEditText.setText("");
                 productPhotoAdd.setImageResource(R.drawable.ic_add_to_photos_light_blue);
@@ -271,9 +372,9 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
 
                 } else {
 
-                    if (isEdit){
+                    int position = listProducts.indexOf(clotheEdit);
 
-                        int position = listProducts.indexOf(clotheEdit);
+                    if (isEdit){
 
                         if(clotheEdit.getStorageAdress().isEmpty()){
 
@@ -309,9 +410,23 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
                         Toast.makeText(this, "Product added", Toast.LENGTH_LONG).show();
                     }
 
+                    database.open();
+                    boolean result = database.updateClothesInformation(listProducts.get(position));
+
+                    if (result){
+
+                        Toast.makeText(this , "Product changed", Toast.LENGTH_LONG).show();
+                    }else{
+
+                        Toast.makeText(this , "Error updating database", Toast.LENGTH_LONG).show();
+                    }
+
+                    database.close();
+
                     productNameEditText.setText("");
                     productPriceEditText.setText("");
-                    productIdEditText.setEnabled(true);
+                    productIdEditText.setEnabled(false);
+                    deleteButton.setVisibility(View.INVISIBLE);
                     productIdEditText.setText("");
                     inStockEditText.setText("");
                     productPhotoAdd.setImageResource(R.drawable.ic_add_to_photos_light_blue);
@@ -359,7 +474,7 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
                         productPhotoAdd.setImageBitmap(bitmap);
                         isImageAdded = true;
                         isEdit = false;
-                        productIdEditText.setEnabled(true);
+                        productIdEditText.setEnabled(false);
                     }
 
                 }
@@ -384,32 +499,32 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
 
             switch (clothes.getClothIdNumber()) {
 
-                case 0:
+                case 1:
 
                     productPhotoAdd.setImageResource(R.drawable.trousers);
                     break;
 
-                case 111:
+                case 2:
 
                     productPhotoAdd.setImageResource(R.drawable.skirt);
                     break;
 
-                case 222:
+                case 3:
 
                     productPhotoAdd.setImageResource(R.drawable.jeans);
                     break;
 
-                case 333:
+                case 4:
 
                     productPhotoAdd.setImageResource(R.drawable.t_shirt);
                     break;
 
-                case 444:
+                case 5:
 
                     productPhotoAdd.setImageResource(R.drawable.jacket);
                     break;
 
-                case 555:
+                case 6:
 
                     productPhotoAdd.setImageResource(R.drawable.hat);
                     break;
@@ -442,6 +557,58 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
         isImageAdded = true;
         isEdit = true;
         productIdEditText.setEnabled(false);
+    }
+
+    private void registerVoucher(final String voucherNumber){
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, Configure.REGISTER_VOUCHER, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+
+                try{
+
+                    JSONObject jsonObject = new JSONObject(response);
+                    boolean error = jsonObject.getBoolean("error");
+
+                    if(!error){
+
+                        JSONObject vouch =  jsonObject.getJSONObject("Data");
+                        String data = vouch.getString("Voucher");
+
+                        Toast.makeText(getApplicationContext() , "Voucher: " + data + " registered" , Toast.LENGTH_LONG).show();
+
+                    }else{
+
+                        Toast.makeText(getApplicationContext() , jsonObject.getString("error_msg"),Toast.LENGTH_LONG).show();
+                    }
+
+                }catch (JSONException ex){
+
+                    Log.i("Json error" , ex.toString());
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                Toast.makeText(getApplicationContext() , "Error: " + error.toString() , Toast.LENGTH_LONG).show();
+
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+
+                Map<String , String> params = new HashMap<>();
+                params.put("voucher_number" , voucherNumber);
+
+                return params;
+            }
+        };
+
+        String myTag = "reg_voucher";
+        AndroidLoginController.getmInstance().addToRequestQueue(stringRequest, myTag);
+
     }
 
 }

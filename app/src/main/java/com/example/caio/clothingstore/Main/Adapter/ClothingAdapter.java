@@ -65,34 +65,34 @@ public class ClothingAdapter extends ArrayAdapter<Clothes>{
 
             if(clothes.getStorageAdress().isEmpty()) {
 
-                switch (clothes.getName()) {
+                switch (clothes.getClothIdNumber()) {
 
-                    case "Trousers":
+                    case 1:
 
                         productImage.setImageResource(R.drawable.trousers);
                         break;
 
-                    case "Skirt":
+                    case 2:
 
                         productImage.setImageResource(R.drawable.skirt);
                         break;
 
-                    case "Jeans":
+                    case 3:
 
                         productImage.setImageResource(R.drawable.jeans);
                         break;
 
-                    case "T-Shirt":
+                    case 4:
 
                         productImage.setImageResource(R.drawable.t_shirt);
                         break;
 
-                    case "Jacket":
+                    case 5:
 
                         productImage.setImageResource(R.drawable.jacket);
                         break;
 
-                    case "Hat":
+                    case 6:
 
                         productImage.setImageResource(R.drawable.hat);
                         break;

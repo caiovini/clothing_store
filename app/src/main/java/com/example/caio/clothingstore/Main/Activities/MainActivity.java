@@ -28,8 +28,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.example.caio.clothingstore.Main.Adapter.ClothingAdapter;
 import com.example.caio.clothingstore.Main.Database.Database;
+import com.example.caio.clothingstore.Main.Helper.Base64Custom;
 import com.example.caio.clothingstore.Main.Helper.Preferences;
 import com.example.caio.clothingstore.Main.Models.Clothes;
+import com.example.caio.clothingstore.Main.Models.Manager;
 import com.example.caio.clothingstore.Main.Models.Store;
 import com.example.caio.clothingstore.R;
 import java.util.ArrayList;
@@ -54,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
     private final String ITEMS_TOTAL_COUNT = "ITEMS_TOTAL_COUNT";
     private final String ITEMS_TOTAL_SUM = "ITEMS_TOTAL_SUM";
     private final int PERMISSION_REQUEST_CODE = 1;
+
+    private Database database = new Database(this);
 
     private HashMap<Integer , Integer> productsMapCount;
 
@@ -87,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
         productsMapCount = new HashMap<>();
         productsSort = new ArrayList<>();
         clothingAdapter = new ClothingAdapter(this, clotheList);
-        Database database = new Database(this);
         database.getWritableDatabase();
 
         database.open();
@@ -119,6 +122,15 @@ public class MainActivity extends AppCompatActivity {
             database.insertClothes(new Clothes("T-Shirt", 44.55, 8), 2);
             database.insertClothes(new Clothes("Jacket", 38.11, 7), 3);
             database.insertClothes(new Clothes("Hat", 29.77, 4), 3);
+
+
+            //Encryption
+            String password = Base64Custom.encodeBase64("caio123");
+
+            database.insertManager(new Manager(0 , "caio@yahoo.com" , password , "General manager" ) ,1);
+            database.insertManager(new Manager(0 , "vini@yahoo.com" , password , "Local manager" ) ,2);
+            database.insertManager(new Manager(0 , "reis@yahoo.com" , password , "Local manager" ) ,3);
+            database.insertManager(new Manager(0 , "nascimento@yahoo.com" , password , "Local manager" ) ,4);
 
             cursor = database.getAllClothes();
 
@@ -354,12 +366,37 @@ public class MainActivity extends AppCompatActivity {
 
                                 }else {
 
-                                    Intent intent = new Intent(getApplicationContext(), AdminActivity.class);
+                                    database.open();
 
+                                    Cursor cursor = database.getManagerByName(userName , Base64Custom.encodeBase64(userPassword));
 
-                                    intent.putExtra("list_products" , clotheList);
-                                    startActivityForResult(intent ,0 );
-                                    alertDialog.dismiss();
+                                    if (cursor.getCount() > 0){
+
+                                        cursor.moveToFirst();
+                                        String managerRole = cursor.getString(1);
+                                        String managerPassword = cursor.getString(2);
+
+                                        if(!managerPassword.equals("NOT FOUND")){
+
+                                            Intent intent = new Intent(getApplicationContext(), AdminActivity.class);
+
+                                            intent.putExtra("list_products" , clotheList);
+                                            intent.putExtra("role_manager" , managerRole);
+                                            startActivityForResult(intent ,0 );
+                                            alertDialog.dismiss();
+
+                                        }else {
+
+                                            Toast.makeText(getApplicationContext() , "Password incorrect" , Toast.LENGTH_LONG).show();
+                                        }
+
+                                    }else {
+
+                                        Toast.makeText(getApplicationContext() , "User not found" , Toast.LENGTH_LONG).show();
+                                    }
+
+                                    database.close();
+
                                 }
 
                             }
@@ -460,11 +497,20 @@ public class MainActivity extends AppCompatActivity {
                 case "PAYMENT_CONFIRMED":
 
                     productsMapCount.clear();
+                    database.open();
 
+
+                    int userId = extras.getInt("userId");
 
                     objectResult = (Clothes) extras.getSerializable("value");
                     clotheList.set(itemClicked , objectResult);
                     for(Clothes c : clotheList){
+
+                        if(c.isPicked()){
+
+                            database.updateClothesInformation(c);
+                            database.insertOrder(userId , c.getClothIdNumber());
+                        }
 
                         c.setPicked(false);
                     }

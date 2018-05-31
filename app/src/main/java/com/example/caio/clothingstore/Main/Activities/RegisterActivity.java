@@ -1,11 +1,17 @@
 package com.example.caio.clothingstore.Main.Activities;
 
+import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.example.caio.clothingstore.Main.Database.Database;
+import com.example.caio.clothingstore.Main.Helper.Base64Custom;
+import com.example.caio.clothingstore.Main.Models.CreditCard;
+import com.example.caio.clothingstore.Main.Models.Customer;
 import com.example.caio.clothingstore.R;
 
 
@@ -16,16 +22,18 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText userName;
     private EditText password;
     private EditText address;
-    private EditText postalCode;
     private EditText creditCardNumber;
     private EditText securityCreditCardNumber;
     private Button buttonSubmit;
 
+    private final Database database = new Database(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
+        database.getWritableDatabase();
 
 
         firstName = (EditText) findViewById(R.id.registerFirstName);
@@ -33,7 +41,6 @@ public class RegisterActivity extends AppCompatActivity {
         userName = (EditText) findViewById(R.id.registerUserName);
         password = (EditText) findViewById(R.id.registerPassword);
         address = (EditText) findViewById(R.id.registerAdress);
-        postalCode = (EditText) findViewById(R.id.registerPostalCode);
         creditCardNumber = (EditText) findViewById(R.id.registerCreditCard);
         securityCreditCardNumber = (EditText) findViewById(R.id.registerSecurityNumber);
         buttonSubmit = (Button) findViewById(R.id.buttonRegister);
@@ -44,12 +51,39 @@ public class RegisterActivity extends AppCompatActivity {
 
                 if(fieldsAreValid()){
 
-                    Toast.makeText(getApplicationContext() , "Submission complete" , Toast.LENGTH_LONG).show();
-                    onBackPressed();
+                    //Encryption
+                    String passwordEncrypted = Base64Custom.encodeBase64(password.getText().toString());
+
+
+                    Customer customer = new Customer(0 , userName.getText().toString() ,
+                                                                passwordEncrypted ,
+                                                                address.getText().toString() , false);
+
+                    CreditCard creditCard = new CreditCard(0 , Integer.parseInt(creditCardNumber.getText().toString()) ,
+                                                                           Integer.parseInt(securityCreditCardNumber.getText().toString()) ,
+                                                                           "Visa" );
+
+                    database.open();
+
+                    if(database.insertCustomer(customer)) {
+
+                        int idInserted = database.getLastCustomerId();
+
+                        if (database.insertCreditCard(creditCard , idInserted)) {
+
+                            Toast.makeText(getApplicationContext(), "Submission complete", Toast.LENGTH_LONG).show();
+                            onBackPressed();
+                        } else {
+
+                            Toast.makeText(getApplicationContext(), "Error inserting in database", Toast.LENGTH_LONG).show();
+                        }
+                    }
                 }else{
 
                     Toast.makeText(getApplicationContext() , "Error during submission" , Toast.LENGTH_LONG).show();
                 }
+
+                database.close();
 
             }
         });
@@ -57,6 +91,17 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private boolean fieldsAreValid(){
+
+        database.open();
+        Cursor cursor = database.getUserByUsername(userName.getText().toString());
+
+        if(cursor.getCount() > 0){
+
+            Toast.makeText(this , "User already exists" , Toast.LENGTH_LONG).show();
+            userName.requestFocus();
+            return false;
+        }
+        database.close();
 
         if(firstName.getText().toString().isEmpty()){
 
@@ -76,22 +121,10 @@ public class RegisterActivity extends AppCompatActivity {
             userName.requestFocus();
             return false;
 
-        }else if(password.getText().toString().isEmpty()){
-
-            Toast.makeText(this , "Password is empty" , Toast.LENGTH_LONG).show();
-            password.requestFocus();
-            return false;
-
         }else if(address.getText().toString().isEmpty()){
 
             Toast.makeText(this , "Address is empty" , Toast.LENGTH_LONG).show();
             address.requestFocus();
-            return false;
-
-        }else if(postalCode.getText().toString().isEmpty()){
-
-            Toast.makeText(this , "Postal code is empty" , Toast.LENGTH_LONG).show();
-            postalCode.requestFocus();
             return false;
 
         }else if(creditCardNumber.getText().toString().isEmpty()){

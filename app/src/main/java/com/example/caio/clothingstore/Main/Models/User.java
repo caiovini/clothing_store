@@ -1,12 +1,19 @@
 package com.example.caio.clothingstore.Main.Models;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable{
 
     private int userId;
     private String userName;
     private String userPassword;
-    private String address;
-    private boolean isAdmin;
+
+    public User(int userId, String userName, String userPassword) {
+
+        this.userId = userId;
+        this.userName = userName;
+        this.userPassword = userPassword;
+    }
 
     public int getUserId() {
         return userId;
@@ -32,19 +39,4 @@ public class User {
         this.userPassword = userPassword;
     }
 
-    public boolean isAdmin() {
-        return isAdmin;
-    }
-
-    public void setAdmin(boolean admin) {
-        isAdmin = admin;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
 }

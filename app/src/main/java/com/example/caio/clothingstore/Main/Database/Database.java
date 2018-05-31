@@ -7,10 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import com.example.caio.clothingstore.Main.Models.Clothes;
 import com.example.caio.clothingstore.Main.Models.CreditCard;
+import com.example.caio.clothingstore.Main.Models.Customer;
 import com.example.caio.clothingstore.Main.Models.Manager;
 import com.example.caio.clothingstore.Main.Models.Store;
 import com.example.caio.clothingstore.Main.Models.User;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -199,13 +199,13 @@ public class Database extends SQLiteOpenHelper {
     }
 
 
-    public boolean insertUser(User user){
+    public boolean insertCustomer(Customer customer){
 
 
         ContentValues cv = new ContentValues();
-        cv.put(COL_USER_NAME , user.getUserName());
-        cv.put(COL_USER_PASSWORD , user.getUserPassword());
-        cv.put(COL_ADDRESS , user.getAddress());
+        cv.put(COL_USER_NAME , customer.getUserName());
+        cv.put(COL_USER_PASSWORD , customer.getUserPassword());
+        cv.put(COL_ADDRESS , customer.getAddress());
 
         return this.sqLiteDatabase.insert(TBL_USER , null , cv) != -1;
     }
@@ -214,8 +214,8 @@ public class Database extends SQLiteOpenHelper {
 
         ContentValues cv = new ContentValues();
         cv.put(COL_STORE_ID , storeId);
-        cv.put(COL_MANAGER_NAME , manager.getManagerName());
-        cv.put(COL_MANAGER_PASSWORD , manager.getManagerPassword());
+        cv.put(COL_MANAGER_NAME , manager.getUserName());
+        cv.put(COL_MANAGER_PASSWORD , manager.getUserPassword());
         cv.put(COL_ROLE , manager.getRole());
 
         return this.sqLiteDatabase.insert(TBL_MANAGER , null , cv) != - 1;
@@ -245,6 +245,81 @@ public class Database extends SQLiteOpenHelper {
         cv.put(COL_PURCHASE_DATE , formattedDate);
 
         return this.sqLiteDatabase.insert(TBL_ORDER , null , cv) != - 1;
+    }
+
+    public Cursor getUserByUsername(String userName){
+
+
+        String query = "SELECT CO." + COL_USER_ID            + " , CO." + COL_USER_NAME        + " ," +
+                              "CO." + COL_USER_PASSWORD      + " , CO." + COL_ADDRESS          + " ," +
+                              "CC." + COL_CREDIT_CARD_ID     + " , CC." + COL_CREDIT_CARD_TYPE + " ," +
+                              "CC." + COL_CREDIT_CARD_NUMBER + " , CC." + COL_CREDIT_CARD_SECURITY_NUMBER +
+                       " FROM " + TBL_USER        + " CO" +
+                 " INNER JOIN " + TBL_CREDIT_CARD + " CC" +
+                      " ON CC." + COL_USER_ID     + " = CO." + COL_USER_ID +
+                   " WHERE CO." + COL_USER_NAME   + " = ?;";
+
+        return sqLiteDatabase.rawQuery(query , new String[] {userName});
+    }
+
+    public Cursor getManagerByName(String name , String password){
+
+        String query = "SELECT US." + COL_ID_MANAGER + " , US." + COL_ROLE +
+                       " , IFNULL(PS." + COL_MANAGER_PASSWORD + " , 'NOT FOUND') " +
+                       " FROM " + TBL_MANAGER + " US " +
+                       " LEFT JOIN " + TBL_MANAGER + " PS " +
+                       " ON  PS." + COL_ID_MANAGER + " = US." + COL_ID_MANAGER +
+                       " AND PS." + COL_MANAGER_PASSWORD + " = ?" +
+                     " WHERE US." + COL_MANAGER_NAME + " = ?";
+
+        return sqLiteDatabase.rawQuery(query , new String[] {password , name});
+    }
+
+
+    public boolean updateUserInformation(Customer customer){
+
+
+        ContentValues cv = new ContentValues();
+        cv.put(COL_ADDRESS , customer.getAddress());
+
+        return sqLiteDatabase.update(TBL_USER , cv , COL_USER_ID + " = ?" , new String[] {String.valueOf(customer.getUserId())}) != -1;
+    }
+
+
+    public boolean updateCreditCardInformation(CreditCard creditCard){
+
+        ContentValues cv = new ContentValues();
+        cv.put(COL_CREDIT_CARD_NUMBER , creditCard.getCreditCardNumber());
+        cv.put(COL_CREDIT_CARD_SECURITY_NUMBER , creditCard.getSecurityCreditCardNumber());
+
+
+        return sqLiteDatabase.update(TBL_CREDIT_CARD , cv , COL_CREDIT_CARD_ID +  " = ? " , new String[]{ String.valueOf(creditCard.getCreditCardId()) }) != -1;
+    }
+
+
+    public boolean updateClothesInformation(Clothes clothes){
+
+        ContentValues cv = new ContentValues();
+        cv.put(COL_CLOTHE_NAME , clothes.getName());
+        cv.put(COL_NUMBERS_STOCK , clothes.getNumberInStock());
+        cv.put(COL_PRICE , clothes.getPrice());
+
+        return sqLiteDatabase.update(TBL_CLOTHING , cv , COL_CLOTHING_ID + " = ?" , new String[]{ String.valueOf(clothes.getClothIdNumber()) }) != -1;
+    }
+
+
+    public int getLastCustomerId(){
+
+        Cursor cursor = sqLiteDatabase.rawQuery("SELECT MAX(" + COL_USER_ID + ")" + " FROM " + TBL_USER , null);
+
+        if(cursor.getCount() > 0){
+
+            cursor.moveToFirst();
+            return cursor.getInt(0);
+        }else{
+
+            return 0;
+        }
     }
 
     public Cursor getAllCreditCards(){
