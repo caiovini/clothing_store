@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -28,12 +27,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.example.caio.clothingstore.Main.Adapter.ClothingAdapter;
 import com.example.caio.clothingstore.Main.Database.Database;
-import com.example.caio.clothingstore.Main.Helper.Base64Custom;
 import com.example.caio.clothingstore.Main.Helper.Preferences;
 import com.example.caio.clothingstore.Main.Models.Clothes;
 import com.example.caio.clothingstore.Main.Models.Manager;
 import com.example.caio.clothingstore.Main.Models.Store;
 import com.example.caio.clothingstore.R;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.ListIterator;
@@ -125,12 +126,13 @@ public class MainActivity extends AppCompatActivity {
 
 
             //Encryption
-            String password = Base64Custom.encodeBase64("caio123");
+            String password = hashPassword("caio123");
 
             database.insertManager(new Manager(0 , "caio@yahoo.com" , password , "General manager" ) ,1);
             database.insertManager(new Manager(0 , "vini@yahoo.com" , password , "Local manager" ) ,2);
             database.insertManager(new Manager(0 , "reis@yahoo.com" , password , "Local manager" ) ,3);
             database.insertManager(new Manager(0 , "nascimento@yahoo.com" , password , "Local manager" ) ,4);
+
 
             cursor = database.getAllClothes();
 
@@ -368,7 +370,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     database.open();
 
-                                    Cursor cursor = database.getManagerByName(userName , Base64Custom.encodeBase64(userPassword));
+                                    Cursor cursor = database.getManagerByName(userName , hashPassword(userPassword));
 
                                     if (cursor.getCount() > 0){
 
@@ -515,6 +517,7 @@ public class MainActivity extends AppCompatActivity {
                         c.setPicked(false);
                     }
 
+                    database.close();
                     clothingAdapter.notifyDataSetChanged();
                     break;
 
@@ -537,6 +540,23 @@ public class MainActivity extends AppCompatActivity {
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private String hashPassword(String password){
+
+        MessageDigest messageDigest = null;
+
+        try {
+
+            messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.update(password.getBytes(),0,password.length());
+
+        }catch (NoSuchAlgorithmException ex){
+
+            Log.i("Error hashing password" , ex.toString());
+        }
+
+        return new BigInteger(1 , messageDigest.digest()).toString(16);
     }
 
 }

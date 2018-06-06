@@ -22,7 +22,6 @@ import com.android.volley.toolbox.StringRequest;
 import com.example.caio.clothingstore.Main.Activities.BuyActivity;
 import com.example.caio.clothingstore.Main.Database.Database;
 import com.example.caio.clothingstore.Main.Helper.AndroidLoginController;
-import com.example.caio.clothingstore.Main.Helper.Base64Custom;
 import com.example.caio.clothingstore.Main.Helper.Configure;
 import com.example.caio.clothingstore.Main.Helper.Preferences;
 import com.example.caio.clothingstore.Main.Interface.Payment;
@@ -211,7 +210,7 @@ public class DetailsFragment extends Fragment {
         Cursor cursor = database.getUserByUsername(userName);
         cursor.moveToFirst();
 
-        String decodePassword = Base64Custom.decodeBase64(cursor.getString(2));
+        String decodePassword = cursor.getString(2);
 
         CreditCard creditCard = new CreditCard(cursor.getInt(4) , cursor.getInt(6) , cursor.getInt(7) , cursor.getString(5));
         customer = new Customer(cursor.getInt(0) , cursor.getString(1) , decodePassword , cursor.getString(3) , false , creditCard);

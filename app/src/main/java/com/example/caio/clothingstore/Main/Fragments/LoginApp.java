@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,14 +13,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.caio.clothingstore.Main.Activities.RegisterActivity;
 import com.example.caio.clothingstore.Main.Database.Database;
-import com.example.caio.clothingstore.Main.Helper.Base64Custom;
 import com.example.caio.clothingstore.Main.Helper.Preferences;
 import com.example.caio.clothingstore.Main.Models.CreditCard;
 import com.example.caio.clothingstore.Main.Models.Customer;
 import com.example.caio.clothingstore.R;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 
 public class LoginApp extends Fragment {
@@ -101,7 +103,9 @@ public class LoginApp extends Fragment {
 
                 }else{
 
-                    Customer customer = getCustomerInformation(userName.getText().toString() , password.getText().toString() , false);
+
+
+                    Customer customer = getCustomerInformation(userName.getText().toString() , hashPassword(password.getText().toString()) , false);
 
                     if (customer != null) {
 
@@ -128,7 +132,7 @@ public class LoginApp extends Fragment {
         if (cursor.getCount() > 0){
 
             cursor.moveToFirst();
-            String decodePassword = Base64Custom.decodeBase64(cursor.getString(2));
+            String decodePassword = cursor.getString(2);
 
             if(!isLogged){
 
@@ -150,6 +154,23 @@ public class LoginApp extends Fragment {
 
         database.close();
         return customer;
+    }
+
+    private String hashPassword(String password){
+
+        MessageDigest messageDigest = null;
+
+        try {
+
+            messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.update(password.getBytes(),0,password.length());
+
+        }catch (NoSuchAlgorithmException ex){
+
+            Log.i("Error hashing password" , ex.toString());
+        }
+
+        return new BigInteger(1 , messageDigest.digest()).toString(16);
     }
 
 

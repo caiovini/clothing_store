@@ -22,7 +22,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -33,10 +32,8 @@ import com.example.caio.clothingstore.Main.Helper.AndroidLoginController;
 import com.example.caio.clothingstore.Main.Helper.Configure;
 import com.example.caio.clothingstore.Main.Models.Clothes;
 import com.example.caio.clothingstore.R;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;

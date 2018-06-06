@@ -3,16 +3,18 @@ package com.example.caio.clothingstore.Main.Activities;
 import android.database.Cursor;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.example.caio.clothingstore.Main.Database.Database;
-import com.example.caio.clothingstore.Main.Helper.Base64Custom;
 import com.example.caio.clothingstore.Main.Models.CreditCard;
 import com.example.caio.clothingstore.Main.Models.Customer;
 import com.example.caio.clothingstore.R;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 
 public class RegisterActivity extends AppCompatActivity {
@@ -52,7 +54,7 @@ public class RegisterActivity extends AppCompatActivity {
                 if(fieldsAreValid()){
 
                     //Encryption
-                    String passwordEncrypted = Base64Custom.encodeBase64(password.getText().toString());
+                    String passwordEncrypted = hashPassword(password.getText().toString());
 
 
                     Customer customer = new Customer(0 , userName.getText().toString() ,
@@ -144,6 +146,23 @@ public class RegisterActivity extends AppCompatActivity {
             return true;
 
         }
+    }
+
+    private String hashPassword(String password){
+
+        MessageDigest messageDigest = null;
+
+        try {
+
+            messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.update(password.getBytes(),0,password.length());
+
+        }catch (NoSuchAlgorithmException ex){
+
+            Log.i("Error hashing password" , ex.toString());
+        }
+
+        return new BigInteger(1 , messageDigest.digest()).toString(16);
     }
 
     @Override
