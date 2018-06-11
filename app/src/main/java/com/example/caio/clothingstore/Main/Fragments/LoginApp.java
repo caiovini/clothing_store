@@ -72,6 +72,7 @@ public class LoginApp extends Fragment {
 
                 mCallback.onTransaction(customer);
                 buttonLogin.setVisibility(Button.INVISIBLE);
+                register.setVisibility(TextView.INVISIBLE);
             }
         }
 
@@ -113,6 +114,7 @@ public class LoginApp extends Fragment {
                         preferences.saveData(USER_NAME, userName.getText().toString());
                         mCallback.onTransaction(customer);
                         buttonLogin.setVisibility(Button.INVISIBLE);
+                        register.setVisibility(TextView.INVISIBLE);
                     }
 
                 }

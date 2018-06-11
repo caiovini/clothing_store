@@ -62,8 +62,8 @@ public class RegisterActivity extends AppCompatActivity {
                                                                 address.getText().toString() , false);
 
                     CreditCard creditCard = new CreditCard(0 , Integer.parseInt(creditCardNumber.getText().toString()) ,
-                                                                           Integer.parseInt(securityCreditCardNumber.getText().toString()) ,
-                                                                           "Visa" );
+                                                                          Integer.parseInt(securityCreditCardNumber.getText().toString()) ,
+                                                                          "Visa" );
 
                     database.open();
 
