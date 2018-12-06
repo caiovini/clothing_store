@@ -9,6 +9,7 @@ The intention is basically show what can be purchased and indicate where is the 
 The customers can also reserve the model they want to buy and pick it up at a certain time of the day at the closest branch. The use of technology will certainly decrease the operational costs of the company and the products will be offered for a cheaper price.
  
 Functional requirements:
+
 1 -) Maintain clothing prices information:	
 1.1	The mobile application will store information about the clothes and which branch it will be available (model, ID number, price which branch is available and number in stock). 
 1.2 Add login functionality for general manager and branch manager.
@@ -17,6 +18,7 @@ Functional requirements:
 1.5	There should be discount vouchers options to be typed by the customers.
 
 2 -) Place order: 
+
 2.1 Customer will access the application to look for clothes of interest. There will be the option to filter by type (skirts, jeans, jackets, t-shirts, etc.)
 2.2 When the customer finds the product he wants to buy, an order is made and he will access the screen to type personal information (credit/debit number, name, email, address, etc.).
 2.3 Customers can also check if the closest branch has the available item he is willing to purchase.
@@ -24,4 +26,5 @@ Functional requirements:
 
 
 3 -) Social media capabilities:
+
 Give the customers the possibility of sharing products on their social media, this will give more visibility to store and customers who like the products being exposed can make a word of mouth ad through their social media.
