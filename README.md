@@ -36,3 +36,9 @@ Functional requirements:
 3 -) Social media capabilities:
 
 Give the customers the possibility of sharing products on their social media, this will give more visibility to store and customers who like the products being exposed can make a word of mouth ad through their social media.
+
+To run this project:
+
+git clone https://github.com/caiovini/clothing_store.git
+
+run it normally on android studio
